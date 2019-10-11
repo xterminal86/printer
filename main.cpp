@@ -1,6 +1,6 @@
-// 11.10.2019
+// 11.10.2019 xterminal86
 //
-// This program shows how to use Printer class to draw character
+// This program shows how to use Printer class library
 // with SDL2 or ncurses build.
 // Set the preferred library in 'Projects' tab of QT Creator
 // or set the 'USE_SDL' flag accordingly manually.
