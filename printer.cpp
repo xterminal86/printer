@@ -7,11 +7,11 @@
 //
 bool Printer::IsBase64(unsigned char c)
 {
-  auto res = std::find(Base64Chars.begin(),
-                       Base64Chars.end(),
+  auto res = std::find(kBase64Chars.begin(),
+                       kBase64Chars.end(),
                        c);
 
-  return (res != Base64Chars.end());
+  return (res != kBase64Chars.end());
 }
 
 std::string Printer::Base64_Encode(unsigned char const* bytes_to_encode, unsigned int in_len)
@@ -34,7 +34,7 @@ std::string Printer::Base64_Encode(unsigned char const* bytes_to_encode, unsigne
 
       for(i = 0; (i < 4) ; i++)
       {
-        ret += Base64Chars[char_array_4[i]];
+        ret += kBase64Chars[char_array_4[i]];
       }
 
       i = 0;
@@ -55,7 +55,7 @@ std::string Printer::Base64_Encode(unsigned char const* bytes_to_encode, unsigne
 
     for (j = 0; (j < i + 1); j++)
     {
-      ret += Base64Chars[char_array_4[j]];
+      ret += kBase64Chars[char_array_4[j]];
     }
 
     while((i++ < 3))
@@ -83,7 +83,7 @@ std::string Printer::Base64_Decode(const std::string& encoded_string)
     {
       for (i = 0; i <4; i++)
       {
-        char_array_4[i] = Base64Chars.find(char_array_4[i]);
+        char_array_4[i] = kBase64Chars.find(char_array_4[i]);
       }
 
       char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
@@ -108,7 +108,7 @@ std::string Printer::Base64_Decode(const std::string& encoded_string)
 
     for (j = 0; j <4; j++)
     {
-      char_array_4[j] = Base64Chars.find(char_array_4[j]);
+      char_array_4[j] = kBase64Chars.find(char_array_4[j]);
     }
 
     char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
@@ -209,7 +209,7 @@ bool Printer::InitForSDL(bool useEmbeddedTileset)
   }
   else
   {
-    auto res = Base64_Decode(Tileset8x16Base64);
+    auto res = Base64_Decode(kTileset8x16Base64);
     auto bytes = ConvertStringToBytes(res);
     SDL_RWops* data = SDL_RWFromMem(bytes.data(), bytes.size());
     SDL_Surface* surf = IMG_Load_RW(data, 1);
