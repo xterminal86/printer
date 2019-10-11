@@ -1,0 +1,8 @@
+build*/
+obj/
+CMakeLists.txt.user*
+printer
+core.*
+*.txt
+*.out
+*.exe
