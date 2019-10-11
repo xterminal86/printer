@@ -104,9 +104,20 @@ bool SDL2()
   // to SDL_Renderer, font tileset image filename,
   // font character width and height and optional
   // custom global scale which defaults to 1.0
+  /*
   if (!_printer.Init(_renderer,
-                     "standard_8x16.png",
+                     "acorn_8x16.png",
                      kGlyphWidth, kGlyphHeight,
+                     kWindowWidth,
+                     kWindowHeight,
+                     kGlobalScale))
+  {
+    return 1;
+  }
+  */
+
+  // Or you can use embedded tileset
+  if (!_printer.Init(_renderer,
                      kWindowWidth,
                      kWindowHeight,
                      kGlobalScale))
