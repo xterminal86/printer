@@ -89,11 +89,21 @@ bool SDL2()
     SDL_RendererInfo info;
     SDL_GetRenderDriverInfo(i, &info);
 
-    _renderer = SDL_CreateRenderer(_window, i, info.flags);
-    if (_renderer != nullptr)
+    // This is important since printer uses render to texture
+    if (info.flags & SDL_RENDERER_TARGETTEXTURE)
     {
-      break;
+      _renderer = SDL_CreateRenderer(_window, i, info.flags);
+      if (_renderer != nullptr)
+      {
+        break;
+      }
     }
+  }
+
+  if (_renderer == nullptr)
+  {
+    printf("Couldn't create renderer: maybe render to texture isn't supported.\n");
+    return 1;
   }
 
   SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
