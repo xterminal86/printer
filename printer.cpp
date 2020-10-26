@@ -828,19 +828,17 @@ void Printer::PrintFB(const int& x, const int& y,
 
   if (htmlColorFg == "#000000" && htmlColorBg == "#000000")
   {
-    // For invisible and not discovered tiles
-
     tmpFg = "#000000";
     tmpBg = "#000000";
   }
   else if (htmlColorBg != "#000000")
   {
     tmpFg = "#000000";
-    tmpBg = (htmlColorBg == GlobalConstants::FogOfWarColor) ? GlobalConstants::FogOfWarColor : "#FFFFFF";
+    tmpBg = "#FFFFFF";
   }
   else
   {
-    tmpFg = (htmlColorFg == GlobalConstants::FogOfWarColor) ? GlobalConstants::FogOfWarColor : "#FFFFFF";
+    tmpFg = "#FFFFFF";
     tmpBg = "#000000";
   }
 
