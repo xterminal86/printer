@@ -1,17 +1,18 @@
 cmake_minimum_required(VERSION 2.6)
 set(TARGET_NAME printer)
 project(${TARGET_NAME})
-find_package(SDL2 REQUIRED)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=return-type")
 
 option(USE_SDL "Build with SDL2" false)
 
 if (USE_SDL)
+  find_package(SDL2 REQUIRED)
+  find_package(SDL2_image REQUIRED)
+  include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
   add_definitions(-DUSE_SDL)
 endif()
 
-include_directories(${SDL2_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
@@ -19,8 +20,21 @@ file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
 
 add_executable(${TARGET_NAME} ${SOURCES})
 
+set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD_REQUIRED 11)
+
 if (USE_SDL)
-  target_link_libraries(${TARGET_NAME} ${SDL2_LIBRARIES} SDL2_image)
+  if (WIN32)
+    target_link_libraries(${TARGET_NAME} ${MINGW32_LIBRARY}
+                                           ${SDL2MAIN_LIBRARY}
+                                           ${SDL2_LIBRARY}
+                                           ${SDL2_IMAGE_LIBRARIES})
+  else()
+    target_link_libraries(${TARGET_NAME} SDL2 SDL2_image)
+  endif()
 else()
-  target_link_libraries(${TARGET_NAME} ncurses)
+  if (WIN32)
+    target_link_libraries(${TARGET_NAME} pdcurses)
+  else()
+    target_link_libraries(${TARGET_NAME} ncurses)
+  endif()
 endif()

@@ -5,6 +5,11 @@
 // Set the preferred library in 'Projects' tab of QT Creator
 // or set the 'USE_SDL' flag accordingly manually.
 //
+// Under Windows you may have to add manually
+// 'Add - File' in QT Creator named 'SDL2_LIBRARY'
+// and point it to 'libSDL2.dll.a'. Otherwise you'll get
+// undefined references to SDL2 calls.
+//
 
 #include "printer.h"
 
@@ -180,7 +185,7 @@ bool Curses()
 }
 #endif
 
-int main()
+int main(int argc, char* argv[])
 {
   int ret = 0;
   #ifdef USE_SDL
