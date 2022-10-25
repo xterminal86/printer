@@ -1,4 +1,4 @@
-// 11.10.2019 xterminal86
+// 25.10.2022 xterminal86
 //
 // This program shows how to use Printer class library
 // with SDL2 or ncurses build.
@@ -10,7 +10,6 @@
 // and point it to 'libSDL2.dll.a'. Otherwise you'll get
 // undefined references to SDL2 calls.
 //
-
 #include "printer.h"
 
 TG::Printer _printer;
@@ -33,11 +32,14 @@ const std::string khBar       = "=================";
 
 void Display()
 {
-  // Printer::Clear() should be called before any drawing
+  //
+  // Printer::Clear() should be called before any drawing.
+  //
   _printer.Clear();
 
-  // Do any drawing related stuff here
-
+  //
+  // Do any drawing related stuff here.
+  //
   int tw = _printer.TerminalWidth();
   int th = _printer.TerminalHeight();
 
@@ -47,30 +49,38 @@ void Display()
                    th - 1,
                    dims,
                    TG::Printer::kAlignRight,
-                   "#FFFFFF");
+                   TG::Colors::White);
 
-  _printer.PrintFB(40, 0, kExitString, TG::Printer::kAlignCenter, "#FFFFFF");
-  _printer.PrintFB(40, 1, khBar,       TG::Printer::kAlignCenter, "#FFFFFF");
+  _printer.PrintFB(40, 0, kExitString, TG::Printer::kAlignCenter, TG::Colors::White);
+  _printer.PrintFB(40, 1, khBar,       TG::Printer::kAlignCenter, TG::Colors::White);
 
-  _printer.PrintFB(40, 4, '|', "#FFFFFF");
-  _printer.PrintFB(39, 5, '\\', "#FFFFFF");
-  _printer.PrintFB(41, 5, '/', "#FFFFFF");
+  _printer.PrintFB(40, 4, '|',  TG::Colors::White);
+  _printer.PrintFB(39, 5, '\\', TG::Colors::White);
+  _printer.PrintFB(41, 5, '/',  TG::Colors::White);
 
-  _printer.PrintFB(40, 6, "Left Align",   TG::Printer::kAlignLeft,   "#FFFFFF");
-  _printer.PrintFB(40, 7, "Center Align", TG::Printer::kAlignCenter, "#FFFFFF");
-  _printer.PrintFB(40, 8, "Right Align",  TG::Printer::kAlignRight,  "#FFFFFF");
+  _printer.PrintFB(40, 6, "Left Align",   TG::Printer::kAlignLeft,   TG::Colors::White);
+  _printer.PrintFB(40, 7, "Center Align", TG::Printer::kAlignCenter, TG::Colors::White);
+  _printer.PrintFB(40, 8, "Right Align",  TG::Printer::kAlignRight,  TG::Colors::White);
 
-  _printer.DrawWindow({ 0, 5 },
-                      { 20, 5 },
+  _printer.DrawWindow({ 20, 10 },
+                      { 40,  6 },
                       "Header",
-                      "#FFFFFF",
-                      "#4444FF",
-                      "#FFFFFF",
-                      "#004400",
-                      "#222222");
+                      0xFFFFFF,
+                      0x4444FF,
+                      0xFFFFFF,
+                      0x004400,
+                      0x222222);
 
+  _printer.PrintFB(40,
+                   13,
+                   "Hello World!",
+                   TG::Printer::kAlignCenter,
+                   TG::Colors::White);
+
+  //
   // Printer::Render() should be called at the end of all drawing,
   // just like SDL_RenderPresent()
+  //
   _printer.Render();
 }
 
@@ -98,7 +108,9 @@ bool SDL2()
     SDL_RendererInfo info;
     SDL_GetRenderDriverInfo(i, &info);
 
+    //
     // This is important since printer uses render to texture
+    //
     if (info.flags & SDL_RENDERER_TARGETTEXTURE)
     {
       _renderer = SDL_CreateRenderer(_window, i, info.flags);
@@ -117,12 +129,14 @@ bool SDL2()
 
   SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
 
+  //
   // Initialize the printer class with a reference
   // to SDL_Renderer, font tileset image filename,
   // font character width and height and optional
   // custom global scale which defaults to 1.0.
   //
   // Transparent color key is magenta (0xFF, 0x00, 0xFF), hardcoded.
+  //
 
   /*
   if (!_printer.Init(_renderer,
@@ -136,7 +150,9 @@ bool SDL2()
   }
   */
 
-  // Or you can use embedded tileset
+  //
+  // Or you can use embedded tileset.
+  //
   if (!_printer.Init(_renderer,
                      kWindowWidth,
                      kWindowHeight,
@@ -191,6 +207,9 @@ bool Curses()
 
 int main(int argc, char* argv[])
 {
+  std::ignore = argc;
+  std::ignore = argv;
+
   int ret = 0;
   #ifdef USE_SDL
   ret = SDL2();

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include <cstdio>
 #include <algorithm>
@@ -63,6 +64,44 @@ namespace TG
     NColor FgColor;
     NColor BgColor;
   };
+
+  // ===========================================================================
+
+  namespace Colors
+  {
+    namespace ShadesOfGrey
+    {
+      const uint32_t One      = 0x111111;
+      const uint32_t Two      = 0x222222;
+      const uint32_t Three    = 0x333333;
+      const uint32_t Four     = 0x444444;
+      const uint32_t Five     = 0x555555;
+      const uint32_t Six      = 0x666666;
+      const uint32_t Seven    = 0x777777;
+      const uint32_t Eight    = 0x888888;
+      const uint32_t Nine     = 0x999999;
+      const uint32_t Ten      = 0xAAAAAA;
+      const uint32_t Eleven   = 0xBBBBBB;
+      const uint32_t Twelve   = 0xCCCCCC;
+      const uint32_t Thirteen = 0xDDDDDD;
+      const uint32_t Fourteen = 0xEEEEEE;
+    }
+
+    //
+    // Special value to determine
+    // whether we should draw an object or not.
+    //
+    const uint32_t None = 0xFFFFFFFF;
+
+    const uint32_t Black   = 0x000000;
+    const uint32_t White   = 0xFFFFFF;
+    const uint32_t Red     = 0xFF0000;
+    const uint32_t Green   = 0x00FF00;
+    const uint32_t Blue    = 0x0000FF;
+    const uint32_t Cyan    = 0x00FFFF;
+    const uint32_t Magenta = 0xFF00FF;
+    const uint32_t Yellow  = 0xFFFF00;
+  }
 
   // ===========================================================================
 
@@ -324,7 +363,7 @@ namespace TG
         {
           for (int y = 0; y < _terminalHeight; y++)
           {
-            PrintFB(x, y, ' ', "#000000");
+            PrintFB(x, y, ' ', Colors::Black, Colors::Black);
           }
         }
   #else
@@ -371,8 +410,8 @@ namespace TG
       void PrintFB(const int& x,
                    const int& y,
                    const int& ch,
-                   const std::string& htmlColorFg,
-                   const std::string& htmlColorBg = "#000000")
+                   const uint32_t& htmlColorFg,
+                   const uint32_t& htmlColorBg = Colors::Black)
       {
         if (x < 0 || x > _terminalWidth - 1
          || y < 0 || y > _terminalHeight - 1)
@@ -380,26 +419,28 @@ namespace TG
           return;
         }
 
-        // Black & White mode for Windows due to PDCurses not handling colors correctly
+        // Black & White mode for Windows
+        // due to PDCurses not handling colors correctly
 
         #if !(defined(__unix__) || defined(__linux__))
-        std::string tmpFg;
-        std::string tmpBg;
+        uint32_t tmpFg;
+        uint32_t tmpBg;
 
-        if (htmlColorFg == "#000000" && htmlColorBg == "#000000")
+        if (htmlColorFg == Colors::Black
+        and htmlColorBg == Colors::Black)
         {
-          tmpFg = "#000000";
-          tmpBg = "#000000";
+          tmpFg = Colors::Black;
+          tmpBg = Colors::Black;
         }
-        else if (htmlColorBg != "#000000")
+        else if (htmlColorBg != Colors::Black)
         {
-          tmpFg = "#000000";
-          tmpBg = "#FFFFFF";
+          tmpFg = Colors::Black;
+          tmpBg = Colors::White;
         }
         else
         {
-          tmpFg = "#FFFFFF";
-          tmpBg = "#000000";
+          tmpFg = Colors::White;
+          tmpBg = Colors::Black;
         }
 
         size_t hash = GetOrSetColor(tmpFg, tmpBg);
@@ -417,17 +458,25 @@ namespace TG
                    const int& y,
                    const std::string& text,
                    int align,
-                   const std::string& htmlColorFg,
-                   const std::string& htmlColorBg = "#000000")
+                   const uint32_t& htmlColorFg,
+                   const uint32_t& htmlColorBg = Colors::Black)
       {
         auto textPos = AlignText(x, y, align, text);
 
         int xOffset = 0;
         for (auto& c : text)
         {
+          //
           // Coordinates are swapped because
-          // in framebuffer we don't work in ncurses coordinate system
-          PrintFB(textPos.second + xOffset, textPos.first, c, htmlColorFg, htmlColorBg);
+          // in framebuffer we don't work in ncurses
+          // coordinate system.
+          //
+          PrintFB(textPos.second + xOffset,
+                  textPos.first,
+                  c,
+                  htmlColorFg,
+                  htmlColorBg);
+
           xOffset++;
         }
       }
@@ -437,11 +486,11 @@ namespace TG
       void DrawWindow(const Position& leftCorner,
                       const Position& size,
                       const std::string& header = std::string{},
-                      const std::string& headerFgColor = "#FFFFFF",
-                      const std::string& headerBgColor = "#000000",
-                      const std::string& borderColor = "#FFFFFF",
-                      const std::string& borderBgColor = "#000000",
-                      const std::string& bgColor = "#000000")
+                      const uint32_t& headerFgColor = Colors::White,
+                      const uint32_t& headerBgColor = Colors::Black,
+                      const uint32_t& borderColor = Colors::White,
+                      const uint32_t& borderBgColor = Colors::Black,
+                      const uint32_t& bgColor = Colors::Black)
       {
         int x = leftCorner.X;
         int y = leftCorner.Y;
@@ -452,22 +501,22 @@ namespace TG
         {
           for (int j = y + 1; j < y + size.Y; j++)
           {
-            PrintFB(i, j, ' ', "#000000", bgColor);
+            PrintFB(i, j, ' ', Colors::Black, bgColor);
           }
         }
 
         // Corners
 
-        PrintFB(x, y, '+', borderColor, borderBgColor);
-        PrintFB(x + size.X, y, '+', borderColor, borderBgColor);
-        PrintFB(x, y + size.Y, '+', borderColor, borderBgColor);
+        PrintFB(x,          y, '+',          borderColor, borderBgColor);
+        PrintFB(x + size.X, y, '+',          borderColor, borderBgColor);
+        PrintFB(x,          y + size.Y, '+', borderColor, borderBgColor);
         PrintFB(x + size.X, y + size.Y, '+', borderColor, borderBgColor);
 
         // Horizontal bars
 
         for (int i = x + 1; i < x + size.X; i++)
         {
-          PrintFB(i, y, '-', borderColor, borderBgColor);
+          PrintFB(i, y,          '-', borderColor, borderBgColor);
           PrintFB(i, y + size.Y, '-', borderColor, borderBgColor);
         }
 
@@ -475,7 +524,7 @@ namespace TG
 
         for (int i = y + 1; i < y + size.Y; i++)
         {
-          PrintFB(x, i, '|', borderColor, borderBgColor);
+          PrintFB(x,          i, '|', borderColor, borderBgColor);
           PrintFB(x + size.X, i, '|', borderColor, borderBgColor);
         }
 
@@ -485,7 +534,7 @@ namespace TG
           lHeader.insert(0, " ");
           lHeader.append(" ");
 
-          int headerPosX = ((size.X - x) / 2) - lHeader.length() / 2;
+          int headerPosX = (x + (size.X / 2)) - lHeader.length() / 2;
           int headerPosY = y;
 
           for (auto& c : lHeader)
@@ -500,25 +549,27 @@ namespace TG
       void PrintFB(const int& x,
                    const int& y,
                    int image,
-                   const std::string& htmlColorFg,
-                   const std::string& htmlColorBg = "#000000")
+                   const uint32_t& htmlColorFg,
+                   const uint32_t& htmlColorBg = Colors::Black)
       {
-        TileColor tc;
-
-        int tileIndex = image;
-
         int posX = x * _tileWidthScaled;
         int posY = y * _tileHeightScaled;
 
-        if (htmlColorBg.length() != 0)
+        if (htmlColorBg != Colors::None)
         {
-          tc = ConvertHtmlToRGB(htmlColorBg);
-          SDL_SetTextureColorMod(_tileset, tc.R, tc.G, tc.B);
+          ConvertHtmlToRGB(htmlColorBg);
+          SDL_SetTextureColorMod(_tileset,
+                                 _convertedHtml.R,
+                                 _convertedHtml.G,
+                                 _convertedHtml.B);
           DrawTile(posX, posY, 219);
         }
 
-        tc = ConvertHtmlToRGB(htmlColorFg);
-        SDL_SetTextureColorMod(_tileset, tc.R, tc.G, tc.B);
+        ConvertHtmlToRGB(htmlColorFg);
+        SDL_SetTextureColorMod(_tileset,
+                               _convertedHtml.R,
+                               _convertedHtml.G,
+                               _convertedHtml.B);
         DrawTile(posX, posY, image);
       }
 
@@ -528,8 +579,8 @@ namespace TG
                    const int& y,
                    const std::string& text,
                    int align,
-                   const std::string& htmlColorFg,
-                   const std::string& htmlColorBg = "#000000")
+                   const uint32_t& htmlColorFg,
+                   const uint32_t& htmlColorBg = Colors::Black)
       {
         int px = x * _tileWidthScaled;
         int py = y * _tileHeightScaled;
@@ -553,17 +604,21 @@ namespace TG
 
         for (auto& c : text)
         {
-          TileColor tc;
-
-          if (htmlColorBg.length() != 0)
+          if (htmlColorBg != Colors::None)
           {
-            tc = ConvertHtmlToRGB(htmlColorBg);
-            SDL_SetTextureColorMod(_tileset, tc.R, tc.G, tc.B);
+            ConvertHtmlToRGB(htmlColorBg);
+            SDL_SetTextureColorMod(_tileset,
+                                   _convertedHtml.R,
+                                   _convertedHtml.G,
+                                   _convertedHtml.B);
             DrawTile(px, py, 219);
           }
 
-          tc = ConvertHtmlToRGB(htmlColorFg);
-          SDL_SetTextureColorMod(_tileset, tc.R, tc.G, tc.B);
+          ConvertHtmlToRGB(htmlColorFg);
+          SDL_SetTextureColorMod(_tileset,
+                                 _convertedHtml.R,
+                                 _convertedHtml.G,
+                                 _convertedHtml.B);
           DrawTile(px, py, c);
 
           px += _tileWidthScaled;
@@ -635,15 +690,18 @@ namespace TG
       void DrawWindow(const Position& leftCorner,
                       const Position& size,
                       const std::string& header = std::string{},
-                      const std::string& headerFgColor = "#FFFFFF",
-                      const std::string& headerBgColor = "#000000",
-                      const std::string& borderColor = "#FFFFFF",
-                      const std::string& borderBgColor = "#000000",
-                      const std::string& bgColor = "#000000",
+                      const uint32_t& headerFgColor = Colors::White,
+                      const uint32_t& headerBgColor = Colors::Black,
+                      const uint32_t& borderColor = Colors::White,
+                      const uint32_t& borderBgColor = Colors::Black,
+                      const uint32_t& bgColor = Colors::Black,
                       int variant = 0)
       {
-        auto res = GetPerimeter(leftCorner.X, leftCorner.Y,
-                                size.X, size.Y, true);
+        auto res = GetPerimeter(leftCorner.X,
+                                leftCorner.Y,
+                                size.X,
+                                size.Y,
+                                true);
 
         int x = leftCorner.X;
         int y = leftCorner.Y;
@@ -688,22 +746,22 @@ namespace TG
         {
           for (int j = y + 1; j < y + size.Y; j++)
           {
-            PrintFB(i, j, ' ', "#000000", bgColor);
+            PrintFB(i, j, ' ', Colors::Black, bgColor);
           }
         }
 
         // Corners
 
-        PrintFB(x, y, ulCorner, borderColor, borderBgColor);
-        PrintFB(x + size.X, y, urCorner, borderColor, borderBgColor);
-        PrintFB(x, y + size.Y, dlCorner, borderColor, borderBgColor);
+        PrintFB(x,          y,          ulCorner, borderColor, borderBgColor);
+        PrintFB(x + size.X, y,          urCorner, borderColor, borderBgColor);
+        PrintFB(x,          y + size.Y, dlCorner, borderColor, borderBgColor);
         PrintFB(x + size.X, y + size.Y, drCorner, borderColor, borderBgColor);
 
         // Horizontal bars
 
         for (int i = x + 1; i < x + size.X; i++)
         {
-          PrintFB(i, y, hBarU, borderColor, borderBgColor);
+          PrintFB(i, y,          hBarU, borderColor, borderBgColor);
           PrintFB(i, y + size.Y, hBarD, borderColor, borderBgColor);
         }
 
@@ -711,7 +769,7 @@ namespace TG
 
         for (int i = y + 1; i < y + size.Y; i++)
         {
-          PrintFB(x, i, vBarL, borderColor, borderBgColor);
+          PrintFB(x,          i, vBarL, borderColor, borderBgColor);
           PrintFB(x + size.X, i, vBarR, borderColor, borderBgColor);
         }
 
@@ -750,12 +808,18 @@ namespace TG
 
           for (auto& c : lHeader)
           {
-            TileColor tc = ConvertHtmlToRGB(headerBgColor);
-            SDL_SetTextureColorMod(_tileset, tc.R, tc.G, tc.B);
+            ConvertHtmlToRGB(headerBgColor);
+            SDL_SetTextureColorMod(_tileset,
+                                   _convertedHtml.R,
+                                   _convertedHtml.G,
+                                   _convertedHtml.B);
             DrawTile(headerPosX, headerPosY, 219);
 
-            tc = ConvertHtmlToRGB(headerFgColor);
-            SDL_SetTextureColorMod(_tileset, tc.R, tc.G, tc.B);
+            ConvertHtmlToRGB(headerFgColor);
+            SDL_SetTextureColorMod(_tileset,
+                                   _convertedHtml.R,
+                                   _convertedHtml.G,
+                                   _convertedHtml.B);
             DrawTile(headerPosX, headerPosY, c);
 
             headerPosX += _tileWidthScaled;
@@ -769,56 +833,59 @@ namespace TG
       int _terminalWidth;
       int _terminalHeight;
 
+      const uint32_t _maskR = 0x00FF0000;
+      const uint32_t _maskG = 0x0000FF00;
+      const uint32_t _maskB = 0x000000FF;
+
+      template<typename ... Args>
+      std::string StringFormat(const std::string& format, Args ... args)
+      {
+        size_t size = snprintf(nullptr,
+                               0,
+                               format.c_str(),
+                               args ...);
+        std::string s;
+
+        if (!size)
+        {
+          return s;
+        }
+
+        s.resize(size);
+        char *buf = (char *)s.data();
+        snprintf(buf, size + 1, format.c_str(), args ...);
+        return s;
+      }
+
   #ifndef USE_SDL
       bool ContainsColorMap(size_t hashToCheck)
       {
-        for (auto& h : _colorMap)
-        {
-          if (h.first == hashToCheck)
-          {
-            return true;
-          }
-        }
-
-        return false;
+        return (_colorMap.count(hashToCheck) == 1);
       }
 
       // =======================================================================
 
       bool ColorIndexExists(size_t hashToCheck)
       {
-        for (auto& h : _colorIndexMap)
-        {
-          if (h.first == hashToCheck)
-          {
-            return true;
-          }
-        }
-
-        return false;
+        return (_colorIndexMap.count(hashToCheck) == 1);
       }
 
       // =======================================================================
 
-      NColor GetNColor(const std::string& htmlColor)
+      NColor GetNColor(const uint32_t& htmlColor)
       {
         NColor ret;
 
-        std::string hexR = { htmlColor[1], htmlColor[2] };
-        std::string hexG = { htmlColor[3], htmlColor[4] };
-        std::string hexB = { htmlColor[5], htmlColor[6] };
+        int valueR = ((htmlColor & _maskR) >> 16);
+        int valueG = ((htmlColor & _maskG) >> 8);
+        int valueB = (htmlColor  & _maskB);
 
-        int valueR = strtol(hexR.data(), nullptr, 16);
-        int valueG = strtol(hexG.data(), nullptr, 16);
-        int valueB = strtol(hexB.data(), nullptr, 16);
-
+        //
         // ncurses color component has range from 0 to 1000
-
+        //
         int scaledValueR = (valueR / 255.0f) * 1000;
         int scaledValueG = (valueG / 255.0f) * 1000;
         int scaledValueB = (valueB / 255.0f) * 1000;
-
-        //printf("%s %s %s => %i %i %i\n", hexR.data(), hexG.data(), hexB.data(), c.R, c.G, c.B);
 
         ret.R = scaledValueR;
         ret.G = scaledValueG;
@@ -829,23 +896,27 @@ namespace TG
 
       // =======================================================================
 
-      size_t GetOrSetColor(const std::string& htmlColorFg,
-                           const std::string& htmlColorBg)
+      size_t GetOrSetColor(const uint32_t& htmlColorFg,
+                           const uint32_t& htmlColorBg)
       {
-        std::string composition = htmlColorFg + htmlColorBg;
+        std::string fgColorStr = StringFormat("#%06X", htmlColorFg);
+        std::string bgColorStr = StringFormat("#%06X", htmlColorBg);
+
+        std::string composition = fgColorStr + bgColorStr;
+
         std::hash<std::string> hasher;
 
         size_t hash = hasher(composition);
 
-        if (!ContainsColorMap(hash))
+        if (not ContainsColorMap(hash))
         {
           auto fg = GetNColor(htmlColorFg);
           auto bg = GetNColor(htmlColorBg);
 
-          short hashFg = hasher(htmlColorFg);
-          short hashBg = hasher(htmlColorBg);
+          short hashFg = hasher(fgColorStr);
+          short hashBg = hasher(bgColorStr);
 
-          if (!ColorIndexExists(hashFg))
+          if (not ColorIndexExists(hashFg))
           {
             fg.ColorIndex = _colorGlobalIndex;
             _colorIndexMap[hashFg] = _colorGlobalIndex++;
@@ -856,7 +927,7 @@ namespace TG
             fg.ColorIndex = _colorIndexMap[hashFg];
           }
 
-          if (!ColorIndexExists(hashBg))
+          if (not ColorIndexExists(hashBg))
           {
             bg.ColorIndex = _colorGlobalIndex;
             _colorIndexMap[hashBg] = _colorGlobalIndex++;
@@ -943,8 +1014,8 @@ namespace TG
 
       // =======================================================================
 
-      std::map<size_t, ColorPair> _colorMap;
-      std::map<size_t, short> _colorIndexMap;
+      std::unordered_map<size_t, ColorPair> _colorMap;
+      std::unordered_map<size_t, short> _colorIndexMap;
 
       short _colorPairsGlobalIndex = 1;
       short _colorGlobalIndex = 8;
@@ -1121,23 +1192,19 @@ namespace TG
 
       // =======================================================================
 
-      TileColor ConvertHtmlToRGB(const std::string& htmlColor)
+      void ConvertHtmlToRGB(const uint32_t& htmlColor)
       {
-        TileColor res;
+        if (_validColorsCache.count(htmlColor) == 1)
+        {
+          _convertedHtml = _validColorsCache[htmlColor];
+          return;
+        }
 
-        std::string hexR = { htmlColor[1], htmlColor[2] };
-        std::string hexG = { htmlColor[3], htmlColor[4] };
-        std::string hexB = { htmlColor[5], htmlColor[6] };
+        _convertedHtml.R = ((htmlColor & _maskR) >> 16);
+        _convertedHtml.G = ((htmlColor & _maskG) >> 8);
+        _convertedHtml.B = (htmlColor & _maskB);
 
-        int valueR = strtol(hexR.data(), nullptr, 16);
-        int valueG = strtol(hexG.data(), nullptr, 16);
-        int valueB = strtol(hexB.data(), nullptr, 16);
-
-        res.R = valueR;
-        res.G = valueG;
-        res.B = valueB;
-
-        return res;
+        _validColorsCache[htmlColor] = _convertedHtml;
       }
 
       // =======================================================================
@@ -1323,6 +1390,15 @@ namespace TG
 
         return res;
       }
+
+      // =======================================================================
+
+      //
+      // Here lies data after last ConvertHtmlToRGB() call.
+      //
+      TileColor _convertedHtml;
+
+      std::unordered_map<uint32_t, TileColor> _validColorsCache;
 
       const std::string kTileset8x16Base64 =
           "Qk16gAEAAAAAAHoAAABsAAAAgAAAAAABAAABABgAAAAAAACAAQAjLgAAIy4AAAAAAAAAAAAAQkdScwAA"

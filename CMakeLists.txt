@@ -2,7 +2,12 @@ cmake_minimum_required(VERSION 3.0)
 set(TARGET_NAME printer)
 project(${TARGET_NAME})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=return-type")
+add_compile_options(-Wall
+                    -Wextra
+                    -Wno-switch
+                    -Wno-format
+                    -Werror=return-type
+                    -Wfatal-errors)
 
 option(USE_SDL "Build with SDL2" false)
 
