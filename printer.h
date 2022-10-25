@@ -1,3 +1,6 @@
+//
+// 25.10.2022 by xterminal86
+//
 #ifndef PRINTER_H
 #define PRINTER_H
 

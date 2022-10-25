@@ -1,3 +1,4 @@
+//
 // 25.10.2022 xterminal86
 //
 // This program shows how to use Printer class library
