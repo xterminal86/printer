@@ -13,14 +13,14 @@
 
 #include "printer.h"
 
-Printer _printer;
+TG::Printer _printer;
 
 const float kGlobalScale = 2.0f;
 
-const int kGlyphWidth = 8;
+const int kGlyphWidth  = 8;
 const int kGlyphHeight = 16;
 
-const int kWindowWidth = 80 * kGlyphWidth * kGlobalScale;
+const int kWindowWidth  = 80 * kGlyphWidth * kGlobalScale;
 const int kWindowHeight = 24 * kGlyphHeight * kGlobalScale;
 
 #ifdef USE_SDL
@@ -43,18 +43,22 @@ void Display()
 
   std::string dims = std::to_string(tw) + "x" + std::to_string(th);
 
-  _printer.PrintFB(tw - 1, th - 1, dims, Printer::kAlignRight, "#FFFFFF");
+  _printer.PrintFB(tw - 1,
+                   th - 1,
+                   dims,
+                   TG::Printer::kAlignRight,
+                   "#FFFFFF");
 
-  _printer.PrintFB(40, 0, kExitString, Printer::kAlignCenter, "#FFFFFF");
-  _printer.PrintFB(40, 1, khBar, Printer::kAlignCenter, "#FFFFFF");
+  _printer.PrintFB(40, 0, kExitString, TG::Printer::kAlignCenter, "#FFFFFF");
+  _printer.PrintFB(40, 1, khBar,       TG::Printer::kAlignCenter, "#FFFFFF");
 
   _printer.PrintFB(40, 4, '|', "#FFFFFF");
   _printer.PrintFB(39, 5, '\\', "#FFFFFF");
   _printer.PrintFB(41, 5, '/', "#FFFFFF");
 
-  _printer.PrintFB(40, 6, "Left Align", Printer::kAlignLeft, "#FFFFFF");
-  _printer.PrintFB(40, 7, "Center Align", Printer::kAlignCenter, "#FFFFFF");
-  _printer.PrintFB(40, 8, "Right Align", Printer::kAlignRight, "#FFFFFF");
+  _printer.PrintFB(40, 6, "Left Align",   TG::Printer::kAlignLeft,   "#FFFFFF");
+  _printer.PrintFB(40, 7, "Center Align", TG::Printer::kAlignCenter, "#FFFFFF");
+  _printer.PrintFB(40, 8, "Right Align",  TG::Printer::kAlignRight,  "#FFFFFF");
 
   _printer.DrawWindow({ 0, 5 },
                       { 20, 5 },
@@ -113,15 +117,16 @@ bool SDL2()
 
   SDL_SetRenderDrawColor(_renderer, 0, 0, 0, 255);
 
-  IMG_Init(IMG_INIT_PNG);
-
   // Initialize the printer class with a reference
   // to SDL_Renderer, font tileset image filename,
   // font character width and height and optional
-  // custom global scale which defaults to 1.0
+  // custom global scale which defaults to 1.0.
+  //
+  // Transparent color key is magenta (0xFF, 0x00, 0xFF), hardcoded.
+
   /*
   if (!_printer.Init(_renderer,
-                     "acorn_8x16.png",
+                     "acorn-8x16.bmp",
                      kGlyphWidth, kGlyphHeight,
                      kWindowWidth,
                      kWindowHeight,
@@ -154,7 +159,6 @@ bool SDL2()
     Display();
   }
 
-  IMG_Quit();
   SDL_Quit();
 
   return 0;

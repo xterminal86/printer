@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.0)
 set(TARGET_NAME printer)
 project(${TARGET_NAME})
 
@@ -8,8 +8,7 @@ option(USE_SDL "Build with SDL2" false)
 
 if (USE_SDL)
   find_package(SDL2 REQUIRED)
-  find_package(SDL2_image REQUIRED)
-  include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
+  include_directories(${SDL2_INCLUDE_DIRS})
   add_definitions(-DUSE_SDL)
 endif()
 
@@ -25,11 +24,10 @@ set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD_REQUIRED 11)
 if (USE_SDL)
   if (WIN32)
     target_link_libraries(${TARGET_NAME} ${MINGW32_LIBRARY}
-                                           ${SDL2MAIN_LIBRARY}
-                                           ${SDL2_LIBRARY}
-                                           ${SDL2_IMAGE_LIBRARIES})
+                                         ${SDL2MAIN_LIBRARY}
+                                         ${SDL2_LIBRARY})
   else()
-    target_link_libraries(${TARGET_NAME} SDL2 SDL2_image)
+    target_link_libraries(${TARGET_NAME} SDL2)
   endif()
 else()
   if (WIN32)
