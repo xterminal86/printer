@@ -10,10 +10,13 @@ See example.cpp for example usage.
 <TABLE>
   <TR>
     <TD align="center"><B>NCURSES</B></TD>
-    <TD align="center"><B>SDL2</B></TD>
   </TR>
   <TR>
-    <TD><IMG src="github-front/ncurses.png"></IMG></TD>
+    <TD align="center"><IMG src="github-front/ncurses.png"></IMG></TD>
+  </TR>
+    <TD align="center"><B>SDL2</B></TD>
+  </TR>
+  <TR>    
     <TD><IMG src="github-front/sdl2.png"></IMG></TD>
   </TR>  
 </TABLE>
