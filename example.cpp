@@ -15,7 +15,7 @@
 
 TG::Printer _printer;
 
-const float kGlobalScale = 2.0f;
+const float kGlobalScale = 1.0f;
 
 const int kGlyphWidth  = 8;
 const int kGlyphHeight = 16;
@@ -26,6 +26,8 @@ const int kWindowHeight = 24 * kGlyphHeight * kGlobalScale;
 #ifdef USE_SDL
 const std::string kExitString = "Press 'ESC' to exit";
 const std::string khBar       = "===================";
+const std::string kTrollFace  = "SDL2/test/shapes/trollface_24.bmp";
+SDL_Texture* _trollface = nullptr;
 #else
 const std::string kExitString = "Press 'q' to exit";
 const std::string khBar       = "=================";
@@ -78,6 +80,14 @@ void Display()
                    TG::Printer::kAlignCenter,
                    TG::Colors::White);
 
+  #ifdef USE_SDL
+  //
+  // Can do images too, but SDL only.
+  //
+  _printer.DrawImage(10, 10, 128, 128, _trollface);
+  _printer.PrintFB(9, 9, "Images too!", TG::Printer::kAlignCenter, 0xFFFFFF);
+  #endif
+
   //
   // Printer::Render() should be called at the end of all drawing,
   // just like SDL_RenderPresent()
@@ -87,7 +97,15 @@ void Display()
 
 #ifdef USE_SDL
 SDL_Renderer* _renderer = nullptr;
-SDL_Window* _window = nullptr;
+SDL_Window* _window     = nullptr;
+
+SDL_Texture* LoadImage(const std::string& fname)
+{
+  SDL_Surface* surf = SDL_LoadBMP(fname.data());
+  SDL_Texture* tex = SDL_CreateTextureFromSurface(_renderer, surf);
+  SDL_FreeSurface(surf);
+  return tex;
+}
 
 bool SDL2()
 {
@@ -98,7 +116,7 @@ bool SDL2()
   }
 
   _window = SDL_CreateWindow("Printer test",
-                            0, 0,
+                            100, 100,
                             kWindowWidth, kWindowHeight,
                             SDL_WINDOW_SHOWN);
 
@@ -161,6 +179,8 @@ bool SDL2()
   {
     return 1;
   }
+
+  _trollface = LoadImage(kTrollFace);
 
   bool running = true;
   while (running)
