@@ -17,6 +17,6 @@ See example.cpp for example usage.
     <TD align="center"><B>SDL2</B></TD>
   </TR>
   <TR>    
-    <TD><IMG src="github-front/sdl2.png"></IMG></TD>
+    <TD><IMG src="github-front/sdl2.png" width="905px"></IMG></TD>
   </TR>  
 </TABLE>
