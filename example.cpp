@@ -27,7 +27,10 @@ const int kWindowHeight = 24 * kGlyphHeight * kGlobalScale;
 const std::string kExitString = "Press 'ESC' to exit";
 const std::string khBar       = "===================";
 const std::string kTrollFace  = "SDL2/test/shapes/trollface_24.bmp";
-SDL_Texture* _trollface = nullptr;
+const std::string kPlus       = "plus.bmp";
+int _trollface = -1;
+int _plus = -1;
+int angle = 0;
 #else
 const std::string kExitString = "Press 'q' to exit";
 const std::string khBar       = "=================";
@@ -84,8 +87,14 @@ void Display()
   //
   // Can do images too, but SDL only.
   //
-  _printer.DrawImage(10, 10, 128, 128, _trollface);
-  _printer.PrintFB(9, 9, "Images too!", TG::Printer::kAlignCenter, 0xFFFFFF);
+  _printer.PrintFB(70, 5, "Transparency", TG::Printer::kAlignCenter, 0xFFFF00);
+  _printer.DrawImage(_plus, { kWindowWidth - 128 - 10, 10, 128, 128 }, angle++);
+
+  _printer.DrawImage(_trollface, { 10, 10, 64, 64 });
+  _printer.DrawImage(_trollface, { 84, 10, 64, 64 }, 0, SDL_RendererFlip::SDL_FLIP_HORIZONTAL);
+  _printer.DrawImage(_trollface, { 48, 84, 64, 64 }, 0, SDL_RendererFlip::SDL_FLIP_VERTICAL);
+
+  _printer.PrintFB(10, 10, "Images too!", TG::Printer::kAlignCenter, 0x00FF00);
   #endif
 
   //
@@ -98,14 +107,6 @@ void Display()
 #ifdef USE_SDL
 SDL_Renderer* _renderer = nullptr;
 SDL_Window* _window     = nullptr;
-
-SDL_Texture* LoadImage(const std::string& fname)
-{
-  SDL_Surface* surf = SDL_LoadBMP(fname.data());
-  SDL_Texture* tex = SDL_CreateTextureFromSurface(_renderer, surf);
-  SDL_FreeSurface(surf);
-  return tex;
-}
 
 bool SDL2()
 {
@@ -180,7 +181,8 @@ bool SDL2()
     return 1;
   }
 
-  _trollface = LoadImage(kTrollFace);
+  _trollface = _printer.LoadImage(kTrollFace);
+  _plus      = _printer.LoadImage(kPlus, 0xFF00FF);
 
   bool running = true;
   while (running)

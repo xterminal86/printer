@@ -283,6 +283,16 @@ namespace TG
       static const int kAlignCenter = 1;
       static const int kAlignRight  = 2;
 
+      ~Printer()
+      {
+        #ifdef USE_SDL
+        for (auto& i : _images)
+        {
+          SDL_DestroyTexture(i);
+        }
+        #endif
+      }
+
 #ifdef USE_SDL
       /// @param[in] renderer Reference to SDL_Renderer.
       /// @param[in] fontImageFilename Font image filename.
@@ -655,6 +665,157 @@ namespace TG
         }
 
         SDL_RenderCopy(_rendererRef, tex, &src, &dst);
+      }
+
+      // =======================================================================
+
+      int LoadImage(const std::string& fname)
+      {
+        int ret = -1;
+
+        SDL_Surface* surf = SDL_LoadBMP(fname.data());
+        if (surf == nullptr)
+        {
+          printf("Couldn't load image %s: %s\n", fname.data(), SDL_GetError());
+          return ret;
+        }
+
+        SDL_Texture* tex = SDL_CreateTextureFromSurface(_rendererRef, surf);
+        if (tex == nullptr)
+        {
+          printf("Couldn't create texture from surface: %s\n", SDL_GetError());
+          return ret;
+        }
+
+        _images.push_back(tex);
+
+        ret = _images.size() - 1;
+
+        SDL_FreeSurface(surf);
+
+        return ret;
+      }
+
+      // =======================================================================
+
+      int LoadImage(const std::string& fname, uint32_t colorKey)
+      {
+        int ret = -1;
+
+        SDL_Surface* surf = SDL_LoadBMP(fname.data());
+        if (surf == nullptr)
+        {
+          printf("Couldn't load image %s: %s\n", fname.data(), SDL_GetError());
+          return ret;
+        }
+
+        uint32_t r = ((colorKey & _maskR) >> 16);
+        uint32_t g = ((colorKey & _maskG) >> 8);
+        uint32_t b = (colorKey & _maskB);
+
+        int ok = SDL_SetColorKey(surf, SDL_TRUE, SDL_MapRGB(surf->format, r, g, b));
+        if (ok == -1)
+        {
+          printf("Couldn't set color key: %s\n", SDL_GetError());
+          return ret;
+        }
+
+        SDL_Texture* tex = SDL_CreateTextureFromSurface(_rendererRef, surf);
+        if (tex == nullptr)
+        {
+          printf("Couldn't create texture from surface: %s\n", SDL_GetError());
+          return ret;
+        }
+
+        _images.push_back(tex);
+
+        ret = _images.size() - 1;
+
+        SDL_FreeSurface(surf);
+
+        return ret;
+      }
+
+      // =======================================================================
+
+      void DrawImage(int imageIndex,
+                     const SDL_Rect& r,
+                     int angle,
+                     SDL_RendererFlip flip = SDL_RendererFlip::SDL_FLIP_NONE)
+      {
+        if (imageIndex < 0 or imageIndex > (int)_images.size() - 1)
+        {
+          return;
+        }
+
+        SDL_Texture* t = _images[imageIndex];
+
+        int tw, th;
+        int ok = SDL_QueryTexture(t, nullptr, nullptr, &tw, &th);
+        if (ok == -1)
+        {
+          printf("Couldn't query texture: %s\n", SDL_GetError());
+          return;
+        }
+
+        SDL_Rect src;
+        src.x = 0;
+        src.y = 0;
+        src.w = tw;
+        src.h = th;
+
+        SDL_Rect dst;
+        dst.x = r.x;
+        dst.y = r.y;
+        dst.w = r.w;
+        dst.h = r.h;
+
+        if (SDL_GetRenderTarget(_rendererRef) == nullptr)
+        {
+          SDL_SetRenderTarget(_rendererRef, _frameBuffer);
+        }
+
+        SDL_RenderCopyEx(_rendererRef, t, &src, &dst, angle, nullptr, flip);
+      }
+
+      // =======================================================================
+
+      void DrawImage(int imageIndex,
+                     const SDL_Rect& r)
+      {
+        if (imageIndex < 0 or imageIndex > (int)_images.size() - 1)
+        {
+          return;
+        }
+
+        SDL_Texture* t = _images[imageIndex];
+
+        int tw, th;
+        int ok = SDL_QueryTexture(t, nullptr, nullptr, &tw, &th);
+        if (ok == -1)
+        {
+          printf("Couldn't query texture: %s\n", SDL_GetError());
+          return;
+        }
+
+        SDL_Rect src;
+        src.x = 0;
+        src.y = 0;
+        src.w = tw;
+        src.h = th;
+
+        SDL_Rect dst;
+        dst.x = r.x;
+        dst.y = r.y;
+        dst.w = r.w;
+        dst.h = r.h;
+
+        if (SDL_GetRenderTarget(_rendererRef) == nullptr)
+        {
+          SDL_SetRenderTarget(_rendererRef, _frameBuffer);
+        }
+
+        SDL_RenderCopy(_rendererRef, t, &src, &dst);
       }
 
       // =======================================================================
@@ -1060,6 +1221,8 @@ namespace TG
       SDL_Texture* _tileset = nullptr;
       SDL_Texture* _frameBuffer = nullptr;
       SDL_Renderer* _rendererRef = nullptr;
+
+      std::vector<SDL_Texture*> _images;
 
       std::string _tilesetFilename;
 
