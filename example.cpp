@@ -26,7 +26,7 @@ const int kWindowHeight = 24 * kGlyphHeight * kGlobalScale;
 #ifdef USE_SDL
 const std::string kExitString = "Press 'ESC' to exit";
 const std::string khBar       = "===================";
-const std::string kTrollFace  = "SDL2/test/shapes/trollface_24.bmp";
+const std::string kTrollFace  = "trollface.bmp";
 const std::string kPlus       = "plus.bmp";
 int _trollface = -1;
 int _plus = -1;
